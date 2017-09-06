@@ -5,7 +5,7 @@
 
 struct PointHash {
   std::size_t operator()(sf::Vector2i const& v) const {
-    return std::hash<int>{}(v.x) ^ v.y;
+    return std::hash<long long>{}(((long long)v.x << 32) ^ v.y);
   }
 };
 
@@ -22,10 +22,14 @@ public:
   CellWorld() :
     m_vertices(sf::Points)
   {
-    addCell(1, 0);
-    addCell(2, 0);
+    addCell(0, 0);
+    addCell(4, 0);
+    addCell(5, 0);
+    addCell(6, 0);
     addCell(0, 1);
     addCell(1, 1);
+    addCell(2, 1);
+    addCell(5, 1);
     addCell(1, 2);
     m_cells.swap(m_new_cells);
   }
