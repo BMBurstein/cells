@@ -106,7 +106,7 @@ static const unsigned int WIDTH = 800;
 static const unsigned int HEIGHT = 600;
 
 int main() {
-  sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Game of Life v0.3", sf::Style::Close);
+  sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Game of Life v0.3");
 
   CellWorld cells;
   cells.setPosition(WIDTH / 2, HEIGHT / 2);
@@ -125,6 +125,11 @@ int main() {
       case sf::Event::MouseWheelScrolled:
         view = window.getView();
         view.zoom(event.mouseWheelScroll.delta*-0.1f + 1);
+        window.setView(view);
+        break;
+      case sf::Event::Resized:
+        view = window.getView();
+        view.setSize(float(event.size.width), float(event.size.height));
         window.setView(view);
         break;
       //case sf::Event::MouseButtonPressed:
