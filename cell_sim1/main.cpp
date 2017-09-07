@@ -19,7 +19,7 @@ private:
   };
 
 public:
-  CellWorld() : m_vertices(sf::Quads) {
+  CellWorld() : vertices(sf::Quads) {
     addCell(0, 0);
     addCell(4, 0);
     addCell(5, 0);
@@ -33,8 +33,8 @@ public:
   }
 
   void update() {
-    m_new_cells.clear();
-    for (auto& c : m_cells) {
+    newCells.clear();
+    for (auto& c : cells) {
       auto x = c.first.x;
       auto y = c.first.y;
       auto adjacent = cell(x - 1, y - 1).alive + cell(x, y - 1).alive + cell(x + 1, y - 1).alive
@@ -48,34 +48,37 @@ public:
   }
 
   void finalize() {
-    m_cells.swap(m_new_cells);
+    cells.swap(newCells);
 
-    m_vertices.clear();
-    for (auto& c : m_cells) {
+    vertices.clear();
+    for (auto& c : cells) {
       if (c.second.alive) {
-        m_vertices.append({ { float(c.first.x    ), float(c.first.y    ) }, c.second });
-        m_vertices.append({ { float(c.first.x + 1), float(c.first.y    ) }, c.second });
-        m_vertices.append({ { float(c.first.x + 1), float(c.first.y + 1) }, c.second });
-        m_vertices.append({ { float(c.first.x    ), float(c.first.y + 1) }, c.second });
+        vertices.append({ { float(c.first.x    ), float(c.first.y    ) }, c.second });
+        vertices.append({ { float(c.first.x + 1), float(c.first.y    ) }, c.second });
+        vertices.append({ { float(c.first.x + 1), float(c.first.y + 1) }, c.second });
+        vertices.append({ { float(c.first.x    ), float(c.first.y + 1) }, c.second });
       }
     }
   }
 
   Cell cell(int x, int y) {
-    auto it = m_cells.find({ x, y });
-    if (it == m_cells.end()) {
+    auto it = cells.find({ x, y });
+    if (it == cells.end()) {
       return Cell();
     }
     return it->second;
   }
 
   void addCell(int x, int y) {
-    m_new_cells[{x, y}].alive = true;
-    for (int i = x - 1; i <= x + 1; ++i) {
-      for (int j = y - 1; j <= y + 1; ++j) {
-        m_new_cells[{i, j}];//.alive &= true;
-      }
-    }
+    newCells[{x - 1, y - 1}];
+    newCells[{x - 1, y    }];
+    newCells[{x - 1, y + 1}];
+    newCells[{x    , y - 1}];
+    newCells[{x    , y    }].alive = true;
+    newCells[{x    , y + 1}];
+    newCells[{x + 1, y - 1}];
+    newCells[{x + 1, y    }];
+    newCells[{x + 1, y + 1}];
   }
 
 protected:
@@ -88,24 +91,27 @@ protected:
 
     // draw the vertex array
     target.clear(sf::Color::White);
-    target.draw(m_vertices, states);
+    target.draw(vertices, states);
   }
 
 private:
   typedef std::unordered_map<sf::Vector2i, Cell, PointHash> CellsMap;
-  sf::VertexArray m_vertices;
-  CellsMap m_cells;
-  CellsMap m_new_cells;
+
+  sf::VertexArray vertices;
+  CellsMap cells;
+  CellsMap newCells;
 };
 
 static const unsigned int WIDTH = 800;
 static const unsigned int HEIGHT = 600;
 
 int main() {
-  sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Game of Life v0.2", sf::Style::Close);
+  sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Game of Life v0.3", sf::Style::Close);
 
   CellWorld cells;
   cells.setPosition(WIDTH / 2, HEIGHT / 2);
+
+  sf::View view;
 
   // run the main loop
   while (window.isOpen()) {
@@ -116,11 +122,10 @@ int main() {
       case sf::Event::Closed:
         window.close();
         break;
-      case sf::Event::MouseWheelScrolled: {
-        sf::View view = window.getView();
-        view.zoom(event.mouseWheelScroll.delta*-0.1 + 1);
+      case sf::Event::MouseWheelScrolled:
+        view = window.getView();
+        view.zoom(event.mouseWheelScroll.delta*-0.1f + 1);
         window.setView(view);
-      }
         break;
       //case sf::Event::MouseButtonPressed:
       //  cells.update();
