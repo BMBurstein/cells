@@ -19,9 +19,7 @@ private:
   };
 
 public:
-  CellWorld() :
-    m_vertices(sf::Points)
-  {
+  CellWorld() : m_vertices(sf::Quads) {
     addCell(0, 0);
     addCell(4, 0);
     addCell(5, 0);
@@ -31,11 +29,10 @@ public:
     addCell(2, 1);
     addCell(5, 1);
     addCell(1, 2);
-    m_cells.swap(m_new_cells);
+    finalize();
   }
 
-  void update()
-  {
+  void update() {
     m_new_cells.clear();
     for (auto& c : m_cells) {
       auto x = c.first.x;
@@ -47,13 +44,19 @@ public:
         addCell(x, y);
       }
     }
+    finalize();
+  }
 
+  void finalize() {
     m_cells.swap(m_new_cells);
 
     m_vertices.clear();
     for (auto& c : m_cells) {
       if (c.second.alive) {
-        m_vertices.append({ { float(c.first.x),float(c.first.y) }, c.second });
+        m_vertices.append({ { float(c.first.x    ), float(c.first.y    ) }, c.second });
+        m_vertices.append({ { float(c.first.x + 1), float(c.first.y    ) }, c.second });
+        m_vertices.append({ { float(c.first.x + 1), float(c.first.y + 1) }, c.second });
+        m_vertices.append({ { float(c.first.x    ), float(c.first.y + 1) }, c.second });
       }
     }
   }
@@ -77,8 +80,7 @@ public:
 
 protected:
 
-  virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const
-  {
+  virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const {
     // apply the transform
     states.transform *= getTransform();
     
@@ -99,32 +101,33 @@ private:
 static const unsigned int WIDTH = 800;
 static const unsigned int HEIGHT = 600;
 
-int main()
-{
+int main() {
   sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Game of Life v0.2", sf::Style::Close);
 
-  // create the particle system
   CellWorld cells;
   cells.setPosition(WIDTH / 2, HEIGHT / 2);
 
-  // create a clock to track the elapsed time
-  sf::Clock clock;
-
   // run the main loop
-  while (window.isOpen())
-  {
+  while (window.isOpen()) {
     // handle events
     sf::Event event;
-    while (window.pollEvent(event))
-    {
+    while (window.pollEvent(event)) {
       switch (event.type) {
       case sf::Event::Closed:
         window.close();
+        break;
+      case sf::Event::MouseWheelScrolled: {
+        sf::View view = window.getView();
+        view.zoom(event.mouseWheelScroll.delta*-0.1 + 1);
+        window.setView(view);
+      }
+        break;
       //case sf::Event::MouseButtonPressed:
       //  cells.update();
+      //  break;
       }
     }
-
+    
     // update it
     cells.update();
 
