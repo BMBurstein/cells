@@ -125,17 +125,18 @@ int main() {
         window.close();
         break;
       case sf::Event::MouseWheelScrolled:
-      {
-        sf::Vector2i pixel(event.mouseWheelScroll.x, event.mouseWheelScroll.y);
-        auto coords = window.mapPixelToCoords(pixel);
-        view = window.getView();
-        view.zoom(event.mouseWheelScroll.delta*-0.1f + 1);
-        window.setView(view);
-        auto newPixel = window.mapCoordsToPixel(coords);
-        newPixel -= pixel;
-        view.move(sf::Vector2f(newPixel));
-        window.setView(view);
-      } break;
+        if (!dragging) {
+          sf::Vector2i pixel(event.mouseWheelScroll.x, event.mouseWheelScroll.y);
+          auto coords = window.mapPixelToCoords(pixel);
+          view = window.getView();
+          view.zoom(event.mouseWheelScroll.delta*-0.1f + 1);
+          window.setView(view);
+          auto newPixel = window.mapCoordsToPixel(coords);
+          newPixel -= pixel;
+          view.move(sf::Vector2f(newPixel));
+          window.setView(view);
+        }
+        break;
       case sf::Event::Resized:
         view = window.getView();
         view.setSize(float(event.size.width), float(event.size.height));
@@ -154,11 +155,12 @@ int main() {
         break;
       case sf::Event::MouseMoved:
         if (dragging) {
-          sf::Vector2i newPos(event.mouseMove.x, event.mouseMove.y);
+          sf::Vector2i newPos = { event.mouseMove.x, event.mouseMove.y };
           dragPos -= newPos;
 
           view = window.getView();
-          view.move(sf::Vector2f(dragPos));
+          float ratio = view.getSize().y / window.getSize().y;
+          view.move(sf::Vector2f(dragPos) * ratio);
           window.setView(view);
           
           dragPos = newPos;
