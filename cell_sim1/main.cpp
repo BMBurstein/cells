@@ -112,6 +112,8 @@ int main() {
   cells.setPosition(WIDTH / 2, HEIGHT / 2);
 
   sf::View view;
+  bool dragging = false;
+  sf::Vector2i dragPos;
 
   // run the main loop
   while (window.isOpen()) {
@@ -132,9 +134,29 @@ int main() {
         view.setSize(float(event.size.width), float(event.size.height));
         window.setView(view);
         break;
-      //case sf::Event::MouseButtonPressed:
-      //  cells.update();
-      //  break;
+      case sf::Event::MouseButtonPressed:
+        if (event.mouseButton.button == sf::Mouse::Left) {
+          dragging = true;
+          dragPos.x = event.mouseButton.x;
+          dragPos.y = event.mouseButton.y;
+        }
+        break;
+      case sf::Event::MouseButtonReleased:
+        if (event.mouseButton.button == sf::Mouse::Left) {
+          dragging = false;
+        }
+        break;
+      case sf::Event::MouseMoved:
+        if (dragging) {
+          sf::Vector2i newPos(event.mouseMove.x, event.mouseMove.y);
+          dragPos -= newPos;
+
+          view = window.getView();
+          view.move(sf::Vector2f(dragPos));
+          window.setView(view);
+          
+          dragPos = newPos;
+        }
       }
     }
     
