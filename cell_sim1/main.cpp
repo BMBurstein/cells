@@ -125,10 +125,17 @@ int main() {
         window.close();
         break;
       case sf::Event::MouseWheelScrolled:
+      {
+        sf::Vector2i pixel(event.mouseWheelScroll.x, event.mouseWheelScroll.y);
+        auto coords = window.mapPixelToCoords(pixel);
         view = window.getView();
         view.zoom(event.mouseWheelScroll.delta*-0.1f + 1);
         window.setView(view);
-        break;
+        auto newPixel = window.mapCoordsToPixel(coords);
+        newPixel -= pixel;
+        view.move(sf::Vector2f(newPixel));
+        window.setView(view);
+      } break;
       case sf::Event::Resized:
         view = window.getView();
         view.setSize(float(event.size.width), float(event.size.height));
@@ -137,8 +144,7 @@ int main() {
       case sf::Event::MouseButtonPressed:
         if (event.mouseButton.button == sf::Mouse::Left) {
           dragging = true;
-          dragPos.x = event.mouseButton.x;
-          dragPos.y = event.mouseButton.y;
+          dragPos = { event.mouseButton.x, event.mouseButton.y };
         }
         break;
       case sf::Event::MouseButtonReleased:
