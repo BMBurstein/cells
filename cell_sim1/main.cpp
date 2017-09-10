@@ -2,6 +2,8 @@
 
 #include <unordered_map>
 #include <functional>
+#include <string>
+#include <fstream>
 
 struct PointHash {
   std::size_t operator()(sf::Vector2i const& v) const {
@@ -20,16 +22,16 @@ private:
 
 public:
   CellWorld() : vertices(sf::Quads) {
-    addCell(0, 0);
-    addCell(4, 0);
-    addCell(5, 0);
-    addCell(6, 0);
-    addCell(0, 1);
-    addCell(1, 1);
-    addCell(2, 1);
-    addCell(5, 1);
-    addCell(1, 2);
-    finalize();
+    //addCell(0, 0);
+    //addCell(4, 0);
+    //addCell(5, 0);
+    //addCell(6, 0);
+    //addCell(0, 1);
+    //addCell(1, 1);
+    //addCell(2, 1);
+    //addCell(5, 1);
+    //addCell(1, 2);
+    //finalize();
   }
 
   void update() {
@@ -81,6 +83,25 @@ public:
     newCells[{x + 1, y + 1}];
   }
 
+  bool load(std::string path) {
+    std::ifstream file(path);
+    std::string line;
+
+    std::getline(file, line);
+    if (line == "#Life 1.06") {
+      while (file) {
+        int x, y;
+        file >> x >> y;
+        addCell(x, y);
+      }
+    }
+    else {
+      return false;
+    }
+    finalize();
+    return  true;
+  }
+
 protected:
 
   virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const {
@@ -110,6 +131,7 @@ int main() {
 
   CellWorld cells;
   cells.setPosition(WIDTH / 2, HEIGHT / 2);
+  cells.load("max_106.lif");
 
   sf::View view;
   bool dragging = false;
