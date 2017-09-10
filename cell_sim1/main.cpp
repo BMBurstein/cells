@@ -42,8 +42,19 @@ public:
       auto adjacent = cell(x - 1, y - 1).alive + cell(x, y - 1).alive + cell(x + 1, y - 1).alive
                     + cell(x - 1, y    ).alive +           0          + cell(x + 1, y    ).alive
                     + cell(x - 1, y + 1).alive + cell(x, y + 1).alive + cell(x + 1, y + 1).alive;
-      if (adjacent == 3 || (adjacent == 2 && c.second.alive)) {
-        addCell(x, y);
+      if (c.second.alive) {
+        if (adjacent == 3 || adjacent == 2) {
+          newCells[{x, y}].alive = true;
+        }
+        else {
+          touchNeighbors(x, y);
+        }
+      }
+      else {
+        if (adjacent == 3) {
+          newCells[{x, y}].alive = true;
+          touchNeighbors(x, y);
+        }
       }
     }
     finalize();
@@ -63,7 +74,7 @@ public:
     }
   }
 
-  Cell cell(int x, int y) {
+  Cell cell(int x, int y) const {
     auto it = cells.find({ x, y });
     if (it == cells.end()) {
       return Cell();
@@ -72,11 +83,15 @@ public:
   }
 
   void addCell(int x, int y) {
+    newCells[{x, y}].alive = true;
+    touchNeighbors(x, y);
+  }
+
+  void touchNeighbors(int x, int y) {
     newCells[{x - 1, y - 1}];
     newCells[{x - 1, y    }];
     newCells[{x - 1, y + 1}];
     newCells[{x    , y - 1}];
-    newCells[{x    , y    }].alive = true;
     newCells[{x    , y + 1}];
     newCells[{x + 1, y - 1}];
     newCells[{x + 1, y    }];
