@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <functional>
 #include <string>
+#include <utility>
 #include <fstream>
 
 struct PointHash {
@@ -21,7 +22,7 @@ private:
   };
 
 public:
-  CellWorld() : vertices(sf::Quads) {
+  CellWorld() : vertices(sf::Quads), numCellsAlive(0), newNumCellsAlive(0), genCount(0) {
     //addCell(0, 0);
     //addCell(4, 0);
     //addCell(5, 0);
@@ -35,7 +36,6 @@ public:
   }
 
   void update() {
-    newCells.clear();
     for (auto& c : cells) {
       auto x = c.first.x;
       auto y = c.first.y;
@@ -45,6 +45,7 @@ public:
       if (c.second.alive) {
         if (adjacent == 3 || adjacent == 2) {
           newCells[{x, y}].alive = true;
+          ++newNumCellsAlive;
         }
         else {
           touchNeighbors(x, y);
@@ -53,6 +54,7 @@ public:
       else {
         if (adjacent == 3) {
           newCells[{x, y}].alive = true;
+          ++newNumCellsAlive;
           touchNeighbors(x, y);
         }
       }
@@ -61,7 +63,11 @@ public:
   }
 
   void finalize() {
+    using std::swap;
     cells.swap(newCells);
+    swap(numCellsAlive, newNumCellsAlive);
+    newCells.clear();
+    newNumCellsAlive = 0;
 
     vertices.clear();
     for (auto& c : cells) {
@@ -72,6 +78,8 @@ public:
         vertices.append({ { float(c.first.x    ), float(c.first.y + 1) }, c.second });
       }
     }
+
+    ++genCount;
   }
 
   Cell cell(int x, int y) const {
@@ -84,6 +92,7 @@ public:
 
   void addCell(int x, int y) {
     newCells[{x, y}].alive = true;
+    ++newNumCellsAlive;
     touchNeighbors(x, y);
   }
 
@@ -117,6 +126,15 @@ public:
     return  true;
   }
 
+  unsigned int numAlive() const { return numCellsAlive; }
+  unsigned int generation() const { return genCount; }
+
+  std::string stats() const {
+    return "# live cells: " + std::to_string(numAlive()) + '\n'
+         + "# checked cells:" + std::to_string(cells.size()) + '\n'
+         + "gen:" + std::to_string(generation());
+  }
+
 protected:
 
   virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const {
@@ -136,13 +154,25 @@ private:
   sf::VertexArray vertices;
   CellsMap cells;
   CellsMap newCells;
+
+  unsigned int numCellsAlive;
+  unsigned int newNumCellsAlive;
+  unsigned int genCount;
 };
 
 static const unsigned int WIDTH = 800;
 static const unsigned int HEIGHT = 600;
 
 int main() {
-  sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Game of Life v0.3");
+  sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Game of Life v0.4");
+
+  sf::Font vera;
+  sf::Text text;
+  if (vera.loadFromFile("Vera.ttf")) {
+    text.setFont(vera);
+    text.setCharacterSize(16);
+    text.setFillColor(sf::Color::Green);
+  }
 
   CellWorld cells;
   cells.setPosition(WIDTH / 2, HEIGHT / 2);
@@ -211,6 +241,10 @@ int main() {
     // draw it
     window.clear();
     window.draw(cells);
+
+    text.setString(cells.stats());
+    window.draw(text);
+
     window.display();
   }
 

@@ -22,4 +22,7 @@
   <ItemGroup>
     <None Include="max_106.lif" />
   </ItemGroup>
+  <ItemGroup>
+    <Font Include="Vera.ttf" />
+  </ItemGroup>
 </Project>

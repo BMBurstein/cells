@@ -161,6 +161,11 @@
       <FileType>Text</FileType>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Font Include="Vera.ttf">
+      <DeploymentContent>true</DeploymentContent>
+    </Font>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 </Project>
